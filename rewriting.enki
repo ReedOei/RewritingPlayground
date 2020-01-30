@@ -70,7 +70,8 @@ bifunc Name A B is function Name (cons A (cons B empty)).
 
 concat strings Strs is
     when Strs = empty then "".
-    when Strs = cons H T then H .. concat strings T.
+    when Strs = cons H T, T != empty then H .. "," .. concat strings T.
+    when Strs = cons H T, T = empty then H .. concat strings T.
     otherwise then false, "".
 
 format term Term is
@@ -99,6 +100,6 @@ as succ nat N is
     otherwise then false, variable "NONSENSE".
 
 A = as succ nat 5,
-B = as succ nat 5,
+B = as succ nat 6,
 display format term evaluate (bifunc "*" A B) using nat rules.
 
