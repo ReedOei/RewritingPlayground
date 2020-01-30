@@ -1,0 +1,104 @@
+set of A may be
+    empty set |
+    {X} has X : A |
+    X u Y has X : set of A, Y : set of A.
+
+X element of S if
+    when S = {Y} then X = Y.
+    when S = A u B then either (_ element of A) or (_ element of B) holds for X.
+    otherwise then false.
+
+canonize set S is
+    when S = (empty set) u X then canonize set X.
+    when S = X u empty set then canonize set X.
+    when S = X u Y then (canonize set X) u (canonize set Y).
+    otherwise then S.
+
+term A may be
+    constant X has X : A |
+    variable Name has Name : string |
+    function S Terms has S : string, Terms : list (term A) .
+
+define alias substitution Var |-> t A as mapping from Var to (term A) .
+
+rule A may be
+    rl LHS => RHS has LHS : term A, RHS : term A .
+
+zip same length F A and B is
+    when A = cons HA TA, B = cons HB TB then
+        cons (call (call F on HA) on HB) (zip same length F TA and TB).
+    when A = empty, B = empty then empty.
+    otherwise then false, empty.
+
+match Term with Pat is
+    when Pat = variable Y then singleton list Y |-> Term.
+    when Term = constant X, Pat = constant X then empty.
+    when Term = function S Terms, Pat = function S Pats then
+        flatten zip same length (match _ with _) Terms and Pats.
+    otherwise then false, empty.
+
+substitute in Term using Theta is
+    when Term = function S Terms then function S (map (substitute in _ using Theta) over Terms).
+    when Term = variable Var then
+        when Theta contains (Var |-> NewTerm) then NewTerm.
+        otherwise then Term.
+    otherwise then Term = constant X, Term.
+
+X :: Xs is cons X Xs.
+
+subterm of Term at position P is
+    when P = Idx :: Idxs then
+        when Term = function S Terms, Idx < length of Terms then subterm of (Idx th element of Terms) at position Idxs.
+        otherwise then false, Term. -- TODO: Is this the right thing to do here?
+    otherwise then P = empty, Term.
+
+replace subterm of Term at position P with NewTerm is
+    when P = Idx :: Idxs then
+        when Term = function S Terms then
+            NewArg = replace subterm of (Idx th element of Terms) at position Idxs with NewTerm,
+            function S (set index Idx of Terms to NewArg).
+        otherwise then Term.
+    otherwise then P = empty, NewTerm.
+
+apply rule (rl LHS => RHS) to Term is
+    U = subterm of Term at position P,
+    match U with LHS = Theta,
+    replace subterm of Term at position P with substitute in RHS using Theta.
+
+func Name Arg is function Name (singleton list Arg).
+bifunc Name A B is function Name (cons A (cons B empty)).
+
+concat strings Strs is
+    when Strs = empty then "".
+    when Strs = cons H T then H .. concat strings T.
+    otherwise then false, "".
+
+format term Term is
+    when Term = constant X then as text X.
+    when Term = variable V then V.
+    when Term = function S Terms then
+        FormattedTerms = map (format term _) over Terms,
+        S .. "(" .. (concat strings FormattedTerms) .. ")" .
+    otherwise then false, "".
+
+evaluate Term using Rules is
+    display ("Evaluating: " .. (format term Term)),
+    when Rules contains Rule, apply rule Rule to Term = NewTerm then
+        evaluate NewTerm using Rules.
+    otherwise then Term.
+
+nat rules are
+    cons (rl (bifunc "+" (constant 0) (variable "M")) => (variable "M")) (
+    cons (rl (bifunc "+" (func "s" (variable "N")) (variable "M")) => (func "s" (bifunc "+" (variable "N") (variable "M")))) (
+    cons (rl (bifunc "*" (constant 0) (variable "M")) => (constant 0)) (
+    cons (rl (bifunc "*" (func "s" (variable "N")) (variable "M")) => (bifunc "+" (variable "M") (bifunc "*" (variable "N") (variable "M")))) empty))).
+
+as succ nat N is
+    when N = 0 then constant 0.
+    when N > 0 then func "s" (as succ nat (N - 1)).
+    otherwise then false, variable "NONSENSE".
+
+A = as succ nat 5,
+B = as succ nat 5,
+display format term evaluate (bifunc "*" A B) using nat rules.
+
