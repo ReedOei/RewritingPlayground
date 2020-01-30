@@ -1,25 +1,7 @@
-set of A may be
-    empty set |
-    {X} has X : A |
-    X u Y has X : set of A, Y : set of A.
-
-X element of S if
-    when S = {Y} then X = Y.
-    when S = A u B then either (_ element of A) or (_ element of B) holds for X.
-    otherwise then false.
-
-canonize set S is
-    when S = (empty set) u X then canonize set X.
-    when S = X u empty set then canonize set X.
-    when S = X u Y then (canonize set X) u (canonize set Y).
-    otherwise then S.
-
 term A may be
     constant X has X : A |
     variable Name has Name : string |
     function S Terms has S : string, Terms : list (term A) .
-
-define alias substitution Var |-> t A as mapping from Var to (term A) .
 
 rule A may be
     rl LHS => RHS has LHS : term A, RHS : term A .
