@@ -6,12 +6,6 @@ term A may be
 rule A may be
     rl LHS => RHS has LHS : term A, RHS : term A .
 
-zip same length F A and B is
-    when A = cons HA TA, B = cons HB TB then
-        cons (call (call F on HA) on HB) (zip same length F TA and TB).
-    when A = empty, B = empty then empty.
-    otherwise then false, empty.
-
 match Term with Pat is
     when Pat = variable Y then singleton list Y |-> Term.
     when Term = constant X, Pat = constant X then empty.
@@ -25,8 +19,6 @@ substitute in Term using Theta is
         when Theta contains (Var |-> NewTerm) then NewTerm.
         otherwise then Term.
     otherwise then Term = constant X, Term.
-
-X :: Xs is cons X Xs.
 
 subterm of Term at position P is
     when P = Idx :: Idxs then
