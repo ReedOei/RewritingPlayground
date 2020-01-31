@@ -1,10 +1,5 @@
-term A may be
-    constant X has X : A |
-    variable Name has Name : string |
-    function S Terms has S : string, Terms : list (term A) .
-
-rule A may be
-    rl LHS => RHS has LHS : term A, RHS : term A .
+use parsing.
+do not use base.
 
 match Term with Pat is
     when Pat = variable Y then singleton list Y |-> Term;
@@ -21,8 +16,7 @@ substitute in Term using Theta is
 
 subterm of Term at position P is
     when P = Idx :: Idxs,
-         Term = function S Terms,
-         Idx < length of Terms then
+         Term = function S Terms then
          subterm of (Idx th element of Terms) at position Idxs;
     default P = empty, Term.
 
@@ -38,38 +32,45 @@ apply rule (rl LHS => RHS) to Term is
     match U with LHS = Theta,
     replace subterm of Term at position P with substitute in RHS using Theta.
 
-func Name Arg is function Name (singleton list Arg).
-bifunc Name A B is function Name (cons A (cons B empty)).
-
-concat strings Strs is
-    when Strs = empty then "";
-    when Strs = cons H T, T != empty then H .. "," .. concat strings T;
-    when Strs = cons H T, T = empty then H .. concat strings T.
-
-format term Term is
-    when Term = constant X then as text X;
-    when Term = variable V then V;
-    when Term = function S Terms then
-        FormattedTerms = map (format term _) over Terms,
-        S .. "(" .. (concat strings FormattedTerms) .. ")" .
-
 evaluate Term using Rules is
-    display ("Evaluating: " .. (format term Term)),
+    display ("Evaluating " .. (format term Term)),
+
     when Rules contains Rule, apply rule Rule to Term = NewTerm then
+        -- display ("Using rule: " .. format rule Rule),
+        -- display ("Evaluating " .. (format term Term) .. " => " .. (format term NewTerm)),
         evaluate NewTerm using Rules;
     default Term.
 
 nat rules are
-    cons (rl (bifunc "+" (constant 0) (variable "M")) => (variable "M")) (
-    cons (rl (bifunc "+" (func "s" (variable "N")) (variable "M")) => (func "s" (bifunc "+" (variable "N") (variable "M")))) (
-    cons (rl (bifunc "*" (constant 0) (variable "M")) => (constant 0)) (
-    cons (rl (bifunc "*" (func "s" (variable "N")) (variable "M")) => (bifunc "+" (variable "M") (bifunc "*" (variable "N") (variable "M")))) empty))).
+    cons (parse rule "if(true(),A,B)=>A") (
+    cons (parse rule "if(false(),A,B)=>B") (
+    cons (parse rule "+(0,M)=>M") (
+    cons (parse rule "+(s(N),M)=>s(+(N,M))") (
+    cons (parse rule "*(0,M)=>0") (
+    cons (parse rule "*(s(N),M)=>+(M,*(N,M))") (
+    cons (parse rule "=(A,A)=>true()") (
+    cons (parse rule "=(0,s(N))=>false()") (
+    cons (parse rule "=(s(N),0)=>false()") (
+    cons (parse rule "<=(0,N)=>true()") (
+    cons (parse rule "<=(s(N),s(M))=><=(N,M)") (
+    cons (parse rule "<=(s(N),0)=>false()") (
+    cons (parse rule "range(Low,High)=>if(<=(Low,High),cons(Low,range(s(Low),High)),nil)") (
+    cons (parse rule "nums(0)=>cons(0,nil())") (
+    cons (parse rule "nums(s(N))=>cons(s(N),nums(N))") (
+    cons (parse rule "length(nil())=>0") (
+    cons (parse rule "length(cons(X,Xs))=>s(length(Xs))") (
+    cons (parse rule "sum(nil())=>0") (
+    cons (parse rule "sum(cons(X,Xs))=>+(X,sum(Xs))") empty)))))))))))))))))).
+
+func Name Arg is function Name (singleton list Arg).
 
 as succ nat N is
     when N = 0 then constant 0;
     when N > 0 then func "s" (as succ nat (N - 1)).
 
-A = as succ nat 5,
-B = as succ nat 6,
-display format term evaluate (bifunc "*" A B) using nat rules.
+A = as succ nat 2,
+B = as succ nat 10,
+BaseTerm = parse term "sum(range(A,B))",
+Term = substitute in BaseTerm using (cons ("A" |-> A) (cons ("B" |-> B) empty)),
+display format term evaluate Term using nat rules.
 
