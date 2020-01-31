@@ -5,7 +5,7 @@ Some experiments using [Enki](https://github.com/ReedOei/Enki), a programming la
 At the moment it's a simple rewriting interpreter that let's you define rewrite rules and then evaluates a given term using those rules.
 
 For example, the following program contains rewrite rules for defining addition and multiplication on natural numbers represented as `0`, `s(0)`, and so forth.
-It calculates `5 * 6`.
+It calculates `2 * 10`.
 To run it, use `enki run rewriting.enki`
 
 ```
@@ -18,12 +18,13 @@ nat rules are
     cons (parse rule "if(1,A,B)=>B") empty))))).
 
 as succ nat N is
-    when N = 0 then constant 0.
+    when N = 0 then constant 0;
     when N > 0 then func "s" (as succ nat (N - 1)).
-    otherwise then false, variable "NONSENSE".
 
-A = as succ nat 3,
-B = as succ nat 6,
-display format term evaluate (bifunc "*" A B) using nat rules.
+A = as succ nat 2,
+B = as succ nat 10,
+BaseTerm = parse term "*(A,B)",
+Term = substitute in BaseTerm using (cons ("A" |-> A) (cons ("B" |-> B) empty)),
+display format term evaluate Term using nat rules.
 ```
 
