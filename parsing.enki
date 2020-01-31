@@ -1,0 +1,54 @@
+use types.
+do not use base.
+
+A substring of B if
+    B = Start .. Rest,
+    Start = Before .. A.
+
+run sep Level Cur Chars Sep is
+    when Chars = empty then
+        when Cur = "" then empty;
+        when Cur != "" then singleton list Cur;;
+    when Chars = cons C Rest then
+        when Level > 0 then
+            when C = "(" then run sep (Level + 1) (Cur .. C) Rest Sep;
+            when C = ")" then run sep (Level - 1) (Cur .. C) Rest Sep;
+            when C != "(", C != ")" then run sep Level (Cur .. C) Rest Sep;;
+        when Level = 0 then
+            when C = "(" then run sep (Level + 1) (Cur .. C) Rest Sep;
+            when C = Sep then prepend Cur to run sep Level "" Rest Sep;
+            when C != "(", C != Sep then run sep Level (Cur .. C) Rest Sep.
+
+separate Str by Sep is run sep 0 "" (characters of Str) Sep.
+
+parse term Str is
+    when Str = Name .. Call,
+         not("(" substring of Name),
+         Call = Mid .. ")",
+         Mid = "(" .. Arguments,
+         Args = separate Arguments by ",",
+         Terms = map (parse term _) over Args then function Name Terms;
+    when not("(" substring of Str) then
+        when parse int I from Str and "" then constant I;
+        when not((digit list) contains first letter of Str) then variable Str.
+
+parse rule Str is
+    Str = LHS .. Temp,
+    Temp = "=>" .. RHS,
+    rl (parse term LHS) => (parse term RHS).
+
+concat strings Strs is
+    when Strs = empty then "";
+    when Strs = cons H T, T != empty then H .. "," .. concat strings T;
+    when Strs = cons H T, T = empty then H .. concat strings T.
+
+format term Term is
+    when Term = constant X then as text X;
+    when Term = variable V then V;
+    when Term = function S Terms then
+        FormattedTerms = map (format term _) over Terms,
+        S .. "(" .. (concat strings FormattedTerms) .. ")" .
+
+format rule (rl LHS => RHS) is
+    "rl " .. (format term LHS) .. " => " .. (format term RHS).
+

@@ -1,0 +1,8 @@
+term A may be
+    constant X has X : A |
+    variable Name has Name : string |
+    function S Terms has S : string, Terms : list (term A) .
+
+rule A may be
+    rl LHS => RHS has LHS : term A, RHS : term A .
+

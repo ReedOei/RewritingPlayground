@@ -1,0 +1,14 @@
+use parsing.
+do not use base.
+
+assert A and B equal if
+    when A = B then
+        display ("PASSED: " .. as text A .. " = " .. as text B);
+    when A != B then
+        display ("FAILED: " .. as text A .. " != " .. as text B).
+
+assert (format rule parse rule "+(0,M)=>M") and "rl +(0,M) => M" equal.
+assert (format rule parse rule "+(s(N),M)=>M") and "rl +(s(N),M) => M" equal.
+assert (format rule parse rule "*(0,M)=>0") and "rl *(0,M) => 0" equal.
+assert (format rule parse rule "*(s(N),M)=>+(M,*(N,M))") and "rl *(s(N),M) => +(M,*(N,M))" equal.
+
