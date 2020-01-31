@@ -48,19 +48,14 @@ nat rules are
     cons (parse rule "+(s(N),M)=>s(+(N,M))") (
     cons (parse rule "*(0,M)=>0") (
     cons (parse rule "*(s(N),M)=>+(M,*(N,M))") (
-    cons (parse rule "=(A,A)=>true()") (
-    cons (parse rule "=(0,s(N))=>false()") (
-    cons (parse rule "=(s(N),0)=>false()") (
     cons (parse rule "<=(0,N)=>true()") (
     cons (parse rule "<=(s(N),s(M))=><=(N,M)") (
     cons (parse rule "<=(s(N),0)=>false()") (
-    cons (parse rule "range(Low,High)=>if(<=(Low,High),cons(Low,range(s(Low),High)),nil)") (
+    cons (parse rule "range(Low,High)=>if(<=(Low,High),cons(Low,range(s(Low),High)),nil())") (
     cons (parse rule "nums(0)=>cons(0,nil())") (
     cons (parse rule "nums(s(N))=>cons(s(N),nums(N))") (
-    cons (parse rule "length(nil())=>0") (
-    cons (parse rule "length(cons(X,Xs))=>s(length(Xs))") (
     cons (parse rule "sum(nil())=>0") (
-    cons (parse rule "sum(cons(X,Xs))=>+(X,sum(Xs))") empty)))))))))))))))))).
+    cons (parse rule "sum(cons(X,Xs))=>+(X,sum(Xs))") empty))))))))))))).
 
 func Name Arg is function Name (singleton list Arg).
 
@@ -70,7 +65,7 @@ as succ nat N is
 
 A = as succ nat 2,
 B = as succ nat 10,
-BaseTerm = parse term "sum(range(A,B))",
+BaseTerm = parse term "+(sum(range(0,+(A,B))),sum(range(A,B)))",
 Term = substitute in BaseTerm using (cons ("A" |-> A) (cons ("B" |-> B) empty)),
 display format term evaluate Term using nat rules.
 
